@@ -11,4 +11,3 @@ DROP TABLE Rating_Platform;
 DROP TABLE Database_Managers;
 DROP TABLE Genre;
 DROP TABLE Audience;
-
