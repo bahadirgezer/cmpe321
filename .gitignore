@@ -10,3 +10,4 @@ project2/2020400378_2020400039
 project3/.idea
 project3/.env
 project3/src/database/__pycache__
+project3/src/gui/__pycache__

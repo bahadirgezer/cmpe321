@@ -1,51 +1,30 @@
 import database.query as q
-from database.database import Database
+from database.database import Database, Column
 import tkinter as tk
+from gui.app import App
 
 
-def mywindow():
-    # create a small window to display the results with tkinter
-    root = tk.Tk()
-    root.title("MySQL")
-    root.geometry("500x500")
-    root.configure(bg="white")
-    root.resizable(False, False)
-
-    # create a label to display the results
-    label = tk.Label(root, text="MySQL", bg="white", font=("Arial", 20))
-    label.pack(pady=20)
-
-    # create a frame to hold the buttons
-    button_frame = tk.Frame(root, bg="white")
-    button_frame.pack()
-
-    # create the schema name entry
-    schema_name_entry = tk.Entry(button_frame, font=("Arial", 20), justify="center")
-    schema_name_entry.pack(pady=20)
-
-    database_name_entry = tk.Entry(button_frame, font=("Arial", 20), justify="center")
-    database_name_entry.pack(pady=20)
-
-    # create the buttons
-
-    # create a button to create a schema
-    create_schema_button = tk.Button(button_frame, text="Create Schema", font=("Arial", 20), padx=10, pady=10,
-                                     command=lambda: db.create_schema(schema_name_entry.get()))
-
-    create_schema_button.pack(pady=20)
-
-    create_table_button = tk.Button(button_frame, text="Create Table", font=("Arial", 20), padx=10, pady=10,
-                                    command=lambda: db.create_table(schema_name_entry.get(), database_name_entry.get()))
-
-    create_table_button.pack(pady=20)
-
-    # run the window
-    root.mainloop()
+def loop(db: Database):
+    keyboard_input: str = ""
+    while keyboard_input != "exit":
+        print(db.execute_query(keyboard_input))
+        keyboard_input = input("> ")
+    db.disconnect()
 
 
 if __name__ == '__main__':
     db = Database()
     db.connect()
+    db.use_schema("movie")
+    db.create_table("audience", columns=[
+        Column(name="id", data_type="int", primary_key=True, auto_increment=True),
+        Column(name="name", data_type="varchar", length=50),
+        Column(name="age", data_type="int"),
+        Column(name="username", data_type="varchar", length=50, unique=True),
+    ])
+    # App().run()
+    loop(db)
+
 
     input()
     db.disconnect()
