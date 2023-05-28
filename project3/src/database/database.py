@@ -23,6 +23,27 @@ class Column:
                  index_name: str = None,
                  index_type: str = None,
                  index_columns: list = None):
+        """
+        :param name:
+        :param data_type:
+        :param length:
+        :param precision:
+        :param scale:
+        :param nullable:
+        :param primary_key:
+        :param auto_increment:
+        :param default:
+        :param unique:
+        :param check:
+        :param foreign_key:
+        :param reference:
+        :param on_update:
+        :param on_delete:
+        :param index:
+        :param index_name:
+        :param index_type:
+        :param index_columns:
+        """
 
         self.name = name
         self.data_type = data_type
@@ -71,7 +92,6 @@ class Column:
             if self.on_delete:
                 column += f" ON DELETE {self.on_delete}"
         return column
-
 
 
 class Database:

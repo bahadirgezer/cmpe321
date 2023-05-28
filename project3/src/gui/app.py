@@ -1,91 +1,155 @@
 import tkinter as tk
 from tkinter import ttk
 
-
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
         # Set window title and size
-        self.title("My App")
-        self.geometry("600x400")
+        self.title("Database Management System")
+        self.geometry("800x600")
 
-        # Create a tab control
-        self.tabControl = ttk.Notebook(self)
+        # Create a login screen
+        self.login_frame = ttk.Frame(self)
+        self.login_frame.pack(expand=1, fill="both")
 
-        # Create tabs
-        self.tab1 = ttk.Frame(self.tabControl)
-        self.tab2 = ttk.Frame(self.tabControl)
+        # Create a label and combobox for role selection
+        self.role_label = ttk.Label(self.login_frame, text="Select a role:")
+        self.role_label.pack(pady=10)
 
-        # Add tabs to the tab control
-        self.tabControl.add(self.tab1, text='Tab 1')
-        self.tabControl.add(self.tab2, text='Tab 2')
+        self.role_var = tk.StringVar()
+        self.role_combobox = ttk.Combobox(self.login_frame, textvariable=self.role_var,
+                                          values=["Manager", "Director", "Audience"])
+        self.role_combobox.pack()
 
-        # Create a label and button in the first tab
-        self.label1 = ttk.Label(self.tab1, text='Hello, world!')
-        self.label1.pack(padx=10, pady=10)
+        # Create a frame for Manager/Director login
+        self.login_frame2 = ttk.Frame(self.login_frame)
+        self.login_frame2.pack(pady=10)
 
-        self.button1 = ttk.Button(self.tab1, text='Click me!', command=self.button_clicked)
-        self.button1.pack(padx=10, pady=10)
+        # Create entry fields for username and password
+        self.username_label = ttk.Label(self.login_frame2, text="Username:")
+        self.username_label.grid(row=0, column=0, padx=5, pady=5)
+        self.username_entry = ttk.Entry(self.login_frame2)
+        self.username_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        # Create an entry field and button in the second tab
-        self.entry2 = ttk.Entry(self.tab2)
-        self.entry2.pack(padx=10, pady=10)
+        self.password_label = ttk.Label(self.login_frame2, text="Password:")
+        self.password_label.grid(row=1, column=0, padx=5, pady=5)
+        self.password_entry = ttk.Entry(self.login_frame2, show="*")
+        self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        self.button2 = ttk.Button(self.tab2, text='Print text', command=self.print_text)
-        self.button2.pack(padx=10, pady=10)
+        # Create a login button
+        self.login_button = ttk.Button(self.login_frame, text="Login", command=self.login)
+        self.login_button.pack(pady=10)
 
-        # Pack the tab control
-        self.tabControl.pack(expand=1, fill="both")
+        # Create a Pane for each role
+        self.panes = ttk.PanedWindow(self, orient="vertical")
+        self.panes.pack(expand=1, fill="both")
 
-    # Event handler for the button in tab 1
-    def button_clicked(self):
-        self.label1.config(text='Button clicked!')
+        # Create widgets for the Manager pane
+        self.manager_pane = ttk.Frame(self.panes)
+        self.manager_label = ttk.Label(self.manager_pane, text="Manager")
+        self.manager_label.pack(pady=10)
 
-    # Event handler for the button in tab 2
-    def print_text(self):
-        text = self.entry2.get()
-        print(text)
+        # Create widgets for the Director pane
+        self.director_pane = ttk.Frame(self.panes)
+        self.director_label = ttk.Label(self.director_pane, text="Director")
+        self.director_label.pack(pady=10)
 
-    def run(self):
-        self.mainloop()
+        # Create widgets for the Audience pane
+        self.audience_pane = ttk.Frame(self.panes)
+        self.audience_label = ttk.Label(self.audience_pane, text="Audience")
+        self.audience_label.pack(pady=10)
 
+    def login(self):
+        # Get the selected role
+        role = self.role_var.get()
 
-def my_window():
-    # create a small window to display the results with tkinter
-    root = tk.Tk()
-    root.title("MySQL")
-    root.geometry("500x500")
-    root.configure(bg="white")
-    root.resizable(False, False)
+        # Check the role and perform appropriate login action
+        if role == "Manager":
+            username = self.username_entry.get()
+            password = self.password_entry.get()
+            if username == "admin" and password == "password":
+                # Login successful, show Manager pane
+                self.panes.add(self.manager_pane, text="Manager")
+                self.panes.show(self.manager_pane)
+        elif role == "Director":
+            username = self.username_entry.get()
+            password = self.password_entry.get()
+            if username == "director" and password == "password":
+                # Login successful, show Director pane
+                self.panes.add(self.director_pane, text="Director")
+                self.panes.show(self.director_pane)
+        elif role == "Audience":
+            confirmation = tk.messagebox.askyesno("Confirmation", "Do you want to log in as an Audience?")
+            if confirmation:
+                # Login successful, show Audience pane
+                self.panes.add(self.audience_pane, text="Audience")
+                self.panes.show(self.audience_pane)
 
-    # create a label to display the results
-    label = tk.Label(root, text="MySQL", bg="white", font=("Arial", 20))
-    label.pack(pady=20)
+    def add_user(self):
+        # TODO: Implement adding a new user to the system
+        pass
 
-    # create a frame to hold the buttons
-    button_frame = tk.Frame(root, bg="white")
-    button_frame.pack()
+    def delete_audience(self):
+        # TODO: Implement deleting an audience and all related data from the system
+        pass
 
-    # create the schema name entry
-    schema_name_entry = tk.Entry(button_frame, font=("Arial", 20), justify="center")
-    schema_name_entry.pack(pady=20)
+    def update_director_platform(self):
+        # TODO: Implement updating the platform id of a director
+        pass
 
-    database_name_entry = tk.Entry(button_frame, font=("Arial", 20), justify="center")
-    database_name_entry.pack(pady=20)
+    def view_directors(self):
+        # TODO: Implement viewing all directors and their attributes
+        pass
 
-    # create the buttons
+    def view_audience_ratings(self):
+        # TODO: Implement viewing all ratings of a specific audience
+        pass
 
-    # create a button to create a schema
-    create_schema_button = tk.Button(button_frame, text="Create Schema", font=("Arial", 20), padx=10, pady=10,
-                                     command=lambda: db.create_schema(schema_name_entry.get()))
+    def view_director_movies(self):
+        # TODO: Implement viewing all movies of a specific director
+        pass
 
-    create_schema_button.pack(pady=20)
+    def view_movie_rating(self):
+        # TODO: Implement viewing the average rating of a movie
+        pass
 
-    create_table_button = tk.Button(button_frame, text="Create Table", font=("Arial", 20), padx=10, pady=10,
-                                    command=lambda: db.create_table(schema_name_entry.get(), database_name_entry.get()))
+    def list_theatres_for_slot(self):
+        # TODO: Implement listing all theatres available for a given slot
+        pass
 
-    create_table_button.pack(pady=20)
+    def add_movie(self):
+        # TODO: Implement adding a new movie to the system
+        pass
 
-    # run the window
-    root.mainloop()
+    def add_predecessor(self):
+        # TODO: Implement adding predecessor(s) to a movie
+        pass
+
+    def view_director_movies(self):
+        # TODO: Implement viewing all movies directed by a director in ascending order of movie id
+        pass
+
+    def view_audience_for_movie(self):
+        # TODO: Implement viewing all audiences who bought a ticket for a specific movie directed by a director
+        pass
+
+    def update_movie_name(self):
+        # TODO: Implement updating the name of a movie directed by a director
+        pass
+
+    def list_all_movies(self):
+        # TODO: Implement listing all movies and their attributes for an audience
+        pass
+
+    def buy_movie_ticket(self):
+        # TODO: Implement buying a movie ticket for an audience
+        pass
+
+    def view_tickets(self):
+        # TODO: Implement viewing all tickets bought by an audience
+        pass
+
+if __name__ == '__main__':
+    app = App()
+    app.mainloop()

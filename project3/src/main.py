@@ -22,8 +22,10 @@ if __name__ == '__main__':
         Column(name="age", data_type="int"),
         Column(name="username", data_type="varchar", length=50, unique=True),
     ])
-    # App().run()
-    loop(db)
+
+    app = App()
+    app.mainloop()
+    # loop(db)
 
 
     input()
