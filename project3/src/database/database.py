@@ -172,6 +172,71 @@ class Database:
             print(f"Error: '{err}'")
         finally:
             self.cursor.close()    def execute_audience_query(self, query: str):
+
+    def execute_manager_query(self, query: str) -> str:
+        # get the tokens from the query string
+        tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
+        # check if the query is valid
+        if len(tokens) < 2:
+            return "Invalid query"
+
+        if tokens[0] not in ["create", "delete", "update", "read"]:
+            return "Invalid query"
+
+        if tokens[0] == "create":
+            if tokens[1] == "audience":
+                if len(tokens) != 6:
+                    return "Invalid query"
+
+                return self.create_audience(tokens[2], tokens[3], tokens[4], tokens[5])
+            elif tokens[1] == "director":
+                if len(tokens) != 7:
+                    return "Invalid query"
+
+                return self.create_director(tokens[2], tokens[3], tokens[4], tokens[5], tokens[6])
+            else:
+                return "Invalid query"
+        elif tokens[0] == "delete":
+            if tokens[1] == "audience":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.delete_audience(tokens[2])
+            else:
+                return "Invalid query"
+
+        elif tokens[0] == "update":
+            if tokens[1] == "director-platform":
+                if len(tokens) != 4:
+                    return "Invalid query"
+
+                return self.update_director_platform(tokens[2], tokens[3])
+            else:
+                return "Invalid query"
+
+        elif tokens[0] == "read":
+            if tokens[1] == "directors":
+                if len(tokens) != 2:
+                    return "Invalid query"
+
+                return self.read_directors()
+            elif tokens[1] == "audience-ratings":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.read_audience_ratings(tokens[2])
+            elif tokens[1] == "director-movies":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.read_director_movies(tokens[2])
+            elif tokens[1] == "movie-average-rating":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.read_movie_average_rating(tokens[2])
+            else:
+                return "Invalid query"
         # get the tokens from the query string
         tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
         # check if the query is valid
