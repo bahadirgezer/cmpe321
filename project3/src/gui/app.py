@@ -1,9 +1,16 @@
 import tkinter as tk
 from tkinter import ttk
 
+from database.database import Database
+
+
 class App(tk.Tk):
-    def __init__(self):
+    def __init__(self, db: Database):
         super().__init__()
+        self.database = db
+        self.manager_login = False
+        self.audience_login = False
+        self.director_login = False
 
         # Set window title and size
         self.title("Database Management System")
@@ -19,22 +26,22 @@ class App(tk.Tk):
 
         self.role_var = tk.StringVar()
         self.role_combobox = ttk.Combobox(self.login_frame, textvariable=self.role_var,
-                                          values=["Manager", "Director", "Audience"])
+                                          values=["Database Manager", "Director", "Audience"])
         self.role_combobox.pack()
 
         # Create a frame for Manager/Director login
-        self.login_frame2 = ttk.Frame(self.login_frame)
-        self.login_frame2.pack(pady=10)
+        self.login_frame_fields = ttk.Frame(self.login_frame)
+        self.login_frame_fields.pack(pady=10)
 
         # Create entry fields for username and password
-        self.username_label = ttk.Label(self.login_frame2, text="Username:")
+        self.username_label = ttk.Label(self.login_frame_fields, text="Username:")
         self.username_label.grid(row=0, column=0, padx=5, pady=5)
-        self.username_entry = ttk.Entry(self.login_frame2)
+        self.username_entry = ttk.Entry(self.login_frame_fields)
         self.username_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        self.password_label = ttk.Label(self.login_frame2, text="Password:")
+        self.password_label = ttk.Label(self.login_frame_fields, text="Password:")
         self.password_label.grid(row=1, column=0, padx=5, pady=5)
-        self.password_entry = ttk.Entry(self.login_frame2, show="*")
+        self.password_entry = ttk.Entry(self.login_frame_fields, show="*")
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
         # Create a login button
@@ -63,92 +70,28 @@ class App(tk.Tk):
     def login(self):
         # Get the selected role
         role = self.role_var.get()
+        username = self.username_entry.get()
+        password = self.password_entry.get()
 
         # Check the role and perform appropriate login action
-        if role == "Manager":
-            username = self.username_entry.get()
-            password = self.password_entry.get()
-            if username == "admin" and password == "password":
-                # Login successful, show Manager pane
-                self.panes.add(self.manager_pane, text="Manager")
-                self.panes.show(self.manager_pane)
+        if role == "Database Manager":
+            self.manager_login = self.database.manager_login(username, password)
+            if self.manager_login:
+                self.login_frame.pack_forget()
+                self.manager_frame.pack(expand=1, fill="both")
+
         elif role == "Director":
-            username = self.username_entry.get()
-            password = self.password_entry.get()
-            if username == "director" and password == "password":
-                # Login successful, show Director pane
-                self.panes.add(self.director_pane, text="Director")
-                self.panes.show(self.director_pane)
+            self.director_login = self.database.director_login(username, password)
+            if self.director_login:
+                self.login_frame.pack_forget()
+                self.director_frame.pack(expand=1, fill="both")
+
         elif role == "Audience":
-            confirmation = tk.messagebox.askyesno("Confirmation", "Do you want to log in as an Audience?")
-            if confirmation:
-                # Login successful, show Audience pane
-                self.panes.add(self.audience_pane, text="Audience")
-                self.panes.show(self.audience_pane)
+            self.audience_login = self.database.audience_login(username, password)
+            if self.audience_login:
+                self.login_frame.pack_forget()
+                self.audience_frame.pack(expand=1, fill="both")
 
-    def add_user(self):
-        # TODO: Implement adding a new user to the system
-        pass
-
-    def delete_audience(self):
-        # TODO: Implement deleting an audience and all related data from the system
-        pass
-
-    def update_director_platform(self):
-        # TODO: Implement updating the platform id of a director
-        pass
-
-    def view_directors(self):
-        # TODO: Implement viewing all directors and their attributes
-        pass
-
-    def view_audience_ratings(self):
-        # TODO: Implement viewing all ratings of a specific audience
-        pass
-
-    def view_director_movies(self):
-        # TODO: Implement viewing all movies of a specific director
-        pass
-
-    def view_movie_rating(self):
-        # TODO: Implement viewing the average rating of a movie
-        pass
-
-    def list_theatres_for_slot(self):
-        # TODO: Implement listing all theatres available for a given slot
-        pass
-
-    def add_movie(self):
-        # TODO: Implement adding a new movie to the system
-        pass
-
-    def add_predecessor(self):
-        # TODO: Implement adding predecessor(s) to a movie
-        pass
-
-    def view_director_movies(self):
-        # TODO: Implement viewing all movies directed by a director in ascending order of movie id
-        pass
-
-    def view_audience_for_movie(self):
-        # TODO: Implement viewing all audiences who bought a ticket for a specific movie directed by a director
-        pass
-
-    def update_movie_name(self):
-        # TODO: Implement updating the name of a movie directed by a director
-        pass
-
-    def list_all_movies(self):
-        # TODO: Implement listing all movies and their attributes for an audience
-        pass
-
-    def buy_movie_ticket(self):
-        # TODO: Implement buying a movie ticket for an audience
-        pass
-
-    def view_tickets(self):
-        # TODO: Implement viewing all tickets bought by an audience
-        pass
 
 if __name__ == '__main__':
     app = App()
