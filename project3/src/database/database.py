@@ -84,7 +84,7 @@ class Database:
             print(f"MySQL: schema '{schema_name}' deleted.")
             self.cursor.close()
 
-    def create_table(self, table_name: str, schema_name: str = None, columns: list[Column] = None):
+    def create_table(self, table_name: str, schema_name: str = None, columns: list[str] = None):
         schema_name = schema_name if schema_name else self.default_schema
         try:
             self.cursor = self.connection.cursor()
