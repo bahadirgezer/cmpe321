@@ -48,24 +48,57 @@ class App(tk.Tk):
         self.login_button = ttk.Button(self.login_frame, text="Login", command=self.login)
         self.login_button.pack(pady=10)
 
+        # MANAGER FRAME
         # Create a Pane for each role
-        self.panes = ttk.PanedWindow(self, orient="vertical")
-        self.panes.pack(expand=1, fill="both")
-
         # Create widgets for the Manager pane
-        self.manager_pane = ttk.Frame(self.panes)
-        self.manager_label = ttk.Label(self.manager_pane, text="Manager")
+        self.manager_frame = ttk.Frame(self)
+        self.manager_label = ttk.Label(self.manager_frame, text="Database Manager")
         self.manager_label.pack(pady=10)
+        # add text box for query, make the text box scrollable
+        self.manager_query_text = tk.Text(self.manager_frame, height=10, width=50)
+        self.manager_query_text.pack(pady=10)
+        # submit
+        self.manager_submit_button = ttk.Button(self.manager_frame, text="Submit", command=self.manager_submit)
+        self.manager_submit_button.pack(pady=10)
+        # add text box for response, make the text box scrollable
+        self.manager_query_response = tk.Label(self.manager_frame, text="Query")
+        self.manager_query_response.pack(pady=10)
 
+        # DIRECTOR FRAME
         # Create widgets for the Director pane
-        self.director_pane = ttk.Frame(self.panes)
-        self.director_label = ttk.Label(self.director_pane, text="Director")
-        self.director_label.pack(pady=10)
+        self.director_frame = ttk.Frame(self)
+        self.director_label = ttk.Label(self.director_frame, text="Director")
+        self.manager_label.pack(pady=10)
+        self.director_query_text = tk.Text(self.director_frame, height=10, width=50)
+        self.director_query_text.pack(pady=10)
+        self.director_submit_button = ttk.Button(self.director_frame, text="Submit", command=self.director_submit)
+        self.director_submit_button.pack(pady=10)
+        self.director_query_response = tk.Label(self.director_frame, text="Query")
+        self.director_query_response.pack(pady=10)
 
+        # AUDIENCE FRAME
         # Create widgets for the Audience pane
-        self.audience_pane = ttk.Frame(self.panes)
-        self.audience_label = ttk.Label(self.audience_pane, text="Audience")
+        self.audience_frame = ttk.Frame(self)
+        self.audience_label = ttk.Label(self.audience_frame, text="Audience")
         self.audience_label.pack(pady=10)
+        self.audience_query_text = tk.Text(self.audience_frame, height=10, width=50)
+        self.audience_query_text.pack(pady=10)
+        self.audience_submit_button = ttk.Button(self.audience_frame, text="Submit", command=self.audience_submit)
+        self.audience_submit_button.pack(pady=10)
+        self.audience_query_response = tk.Label(self.audience_frame, text="Query")
+        self.audience_query_response.pack(pady=10)
+
+    def manager_submit(self):
+        input: str = self.manager_query_text.get("1.0", "end-1c")
+        self.manager_query_response["text"] = self.database.execute_manager_query(input)
+
+    def director_submit(self):
+        input: str = self.director_query_text.get("1.0", "end-1c")
+        self.director_query_response["text"] = self.database.execute_director_query(input)
+
+    def audience_submit(self):
+        input: str = self.audience_query_text.get("1.0", "end-1c")
+        self.audience_query_response["text"] = self.database.execute_audience_query(input)
 
     def login(self):
         # Get the selected role
