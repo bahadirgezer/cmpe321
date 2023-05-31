@@ -622,3 +622,101 @@ class Database:
         else:
             return "Invalid query"
 
+    def create_ticket(self, session_id: str):
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT m.id, m.name, ms.theater_id, ms.time_slot FROM movie m, movie_session ms WHERE m.id = ms.movie_id AND ms.id = {session_id}")
+            if self.cursor.rowcount == 0:
+                return "No movie session found"
+            result = self.cursor.fetchone()
+            movie_id = result[0]
+            movie_name = result[1]
+            theater_id = result[2]
+            time_slot = result[3]
+            self.cursor.execute(f"SELECT predecessor_id FROM movie_predecessor WHERE movie_id = {movie_id}")
+            if self.cursor.rowcount != 0:
+                predecessors = self.cursor.fetchall()
+                for predecessor in predecessors:
+                    pass
+            self.cursor.execute(
+                f"SELECT COUNT(*) FROM movie_session ms, ticket ma WHERE ms.id = ma.movie_session_id AND ms.id = {session_id}")
+            current_audience = self.cursor.fetchone()[0]
+            self.cursor.execute(f"SELECT capacity FROM theater WHERE id = {theater_id}")
+            theater_capacity = self.cursor.fetchone()[0]
+            if current_audience >= theater_capacity:
+                return "The theater is full"
+            self.cursor.execute(f"INSERT INTO ticket VALUES ('{self.audience}', {session_id})")
+            self.connection.commit()
+            return f"Ticket for {movie_name} at {time_slot} in theater {theater_id} is bought"
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_movies_audience(self):
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT DISTINCT m.id, m.name, u.surname, p.name, ms.theater_id, ms.time_slot FROM movie m, movie_session ms, director d, user u, rating_platform p, director_platform dp WHERE d.username = dp.director_username AND p.id = dp.platform_id AND u.username = d.username AND m.id = ms.movie_id AND m.director_username = d.username ORDER BY m.id")
+            if self.cursor.rowcount == 0:
+                return "No movies found"
+            result = self.cursor.fetchall()
+            for i in range(len(result)):
+                self.cursor.execute(f"SELECT predecessor_id FROM movie_predecessor WHERE movie_id = {result[i][0]}")
+                if self.cursor.rowcount == 0:
+                    result[i] = result[i] + ("None",)
+                else:
+                    predecessors = self.cursor.fetchall()
+                    predecessors_list = []
+                    for predecessor in predecessors:
+                        predecessors_list.append(str(predecessor[0]))
+                    result[i] = result[i] + (", ".join(predecessors_list),)
+            movie_list = ["movie_id, movie_name, director_surname, platform, theatre_id, time_slot", "predecessors"]
+            for row in result:
+                movie_list.append(f"{row[0]} {row[1]} {row[2]} {row[3]} {row[4]} {row[5]}")
+            return "\n".join(movie_list)
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_tickets(self):
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT t.movie_session_id, m.name, ms.id, r.rating, m.average_rating FROM ticket t, movie m, movie_session ms, rating r WHERE r.audience_username = t.audience_username AND ms.movie_id = t.movie_session_id AND m.id = ms.movie_id AND t.audience_username = '{self.audience}'")
+            if self.cursor.rowcount == 0:
+                return "No tickets found"
+            result = self.cursor.fetchall()
+            # movie id, movie name, session id, rating, overall rating.
+            ticket_list = ["movie_id, movie_name, session_id, rating, overall_rating"]
+            for row in result:
+                ticket_list.append(f"{row[0]} {row[1]} {row[2]}")
+            return "\n".join(ticket_list)
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_theaters(self, slot: str):
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT DISTINCT t.id, t.district, t.capacity FROM theater t, movie_session ms, movie m WHERE m.id = ms.movie_id AND t.id = ms.theater_id AND  (ms.time_slot > {slot} OR ms.time_slot + m.duration - 1 < {slot})")
+            if self.cursor.rowcount == 0:
+                return "No theaters found"
+            result = self.cursor.fetchall()
+            theater_list = ["theater_id, district, capacity"]
+            for row in result:
+                theater_list.append(f"{row[0]} {row[1]} {row[2]}")
+            return "\n".join(theater_list)
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
