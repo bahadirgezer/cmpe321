@@ -441,6 +441,102 @@ class Database:
             else:
                 return "Invalid query"
 
+    def create_movie(self, movie_id: str, movie_name: str, theater_id: str, time_slot: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT * FROM movie WHERE id = {movie_id}")
+            if int(time_slot) < 0 or int(time_slot) > 4:
+                return "Invalid time slot"
+            if self.cursor.rowcount == 0:
+                self.cursor.execute(
+                    f"INSERT INTO movie (id, name, director_username) VALUES ({movie_id}, '{movie_name}', '{self.director}')")
+            self.cursor.execute(
+                f"INSERT INTO movie_session (movie_id, theater_id, time_slot) VALUES ({movie_id}, {theater_id}, '{time_slot}')")
+            self.connection.commit()
+            return "Movie created"
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def update_predecessor(self, movie_id: str, predecessor_id: list[str]) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            for id in predecessor_id:
+                self.cursor.execute(
+                    f"INSERT INTO movie_predecessor (movie_id, predecessor_id) VALUES ({movie_id}, {id})")
+            self.connection.commit()
+            return "Predecessor updated"
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def update_movie(self, movie_id: str, movie_name: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"UPDATE movie SET name = '{movie_name}' WHERE id = {movie_id}")
+            self.connection.commit()
+            return "Movie updated"
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_movies(self) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT DISTINCT m.id, m.name, ms.theater_id, ms.time_slot FROM movie m, movie_session ms WHERE m.id = ms.movie_id AND m.director_username = '{self.director}' ORDER BY m.id")
+            if self.cursor.rowcount == 0:
+                return "No movies found"
+            result = self.cursor.fetchall()
+            for i in range(len(result)):
+                self.cursor.execute(f"SELECT predecessor_id FROM movie_predecessor WHERE movie_id = {result[i][0]}")
+                if self.cursor.rowcount == 0:
+                    result[i] = result[i] + ("None",)
+                else:
+                    predecessors = self.cursor.fetchall()
+                    predecessors_list = []
+                    for predecessor in predecessors:
+                        predecessors_list.append(str(predecessor[0]))
+                    result[i] = result[i] + (", ".join(predecessors_list),)
+            movie_list = ["movie_id, movie_name, theatre_id, time_slot", "predecessors"]
+            for i, row in enumerate(result):
+                movie_list.append(f"{row[0]} {row[1]} {row[2]} {row[3]} {row[4]}")
+            return "\n".join(movie_list)
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_audiences(self, movie_id: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT a.username, a.name, a.surname FROM audience a, movie_audience ma WHERE a.username = ma.audience_username AND ma.movie_id = {movie_id}")
+            if self.cursor.rowcount == 0:
+                return "No audiences found"
+            result = self.cursor.fetchall()
+            audience_list = ["username, name, surname"]
+            for row in result:
+                audience_list.append(f"{row[0]} {row[1]} {row[2]}")
+            return "\n".join(audience_list)
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
     def execute_director_query(self, query: str) -> str:
         tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
         # check if the query is valid
