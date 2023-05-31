@@ -171,4 +171,37 @@ class Database:
         except mysql.connector.Error as err:
             print(f"Error: '{err}'")
         finally:
-            self.cursor.close()
+            self.cursor.close()    def execute_audience_query(self, query: str):
+        # get the tokens from the query string
+        tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
+        # check if the query is valid
+        if len(tokens) < 2:
+            return "Invalid query"
+
+        if tokens[0] not in ["create", "read"]:
+            return "Invalid query"
+
+        if tokens[0] == "create":
+            if tokens[1] == "ticket":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.create_ticket(tokens[2])
+            else:
+                return "Invalid query"
+        elif tokens[0] == "read":
+            if tokens[1] == "tickets":
+                if len(tokens) != 2:
+                    return "Invalid query"
+
+                return self.read_tickets()
+            elif tokens[1] == "movies":
+                if len(tokens) != 2:
+                    return "Invalid query"
+
+                return self.read_movies_audience()
+            else:
+                return "Invalid query"
+        else:
+            return "Invalid query"
+
