@@ -314,6 +314,59 @@ class Database:
                 return self.read_movie_average_rating(tokens[2])
             else:
                 return "Invalid query"
+
+    def execute_director_query(self, query: str) -> str:
+        tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
+        # check if the query is valid
+        if len(tokens) < 2:
+            return "Invalid query"
+
+        if tokens[0] not in ["create", "delete", "update", "read"]:
+            return "Invalid query"
+
+        if tokens[0] == "create":
+            if tokens[1] == "movie":
+                if len(tokens) != 6:
+                    return "Invalid query"
+
+                return self.create_movie(tokens[2], tokens[3], tokens[4], tokens[5])
+            else:
+                return "Invalid query"
+        elif tokens[0] == "update":
+            if tokens[1] == "predecessor":
+                if len(tokens) < 4:
+                    return "Invalid query"
+
+                return self.update_predecessor(tokens[2], tokens[3:])
+            elif tokens[1] == "movie":
+                if len(tokens) != 4:
+                    return "Invalid query"
+
+                return self.update_movie(tokens[2], tokens[3])
+            else:
+                return "Invalid query"
+        elif tokens[0] == "read":
+            if tokens[1] == "movies":
+                if len(tokens) != 2:
+                    return "Invalid query"
+
+                return self.read_movies()
+            elif tokens[1] == "audiences":
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.read_audiences(tokens[2])
+            elif tokens[1] == "theaters": # read theaters <slot>
+                if len(tokens) != 3:
+                    return "Invalid query"
+
+                return self.read_theaters(tokens[2])
+            else:
+                return "Invalid query"
+        else:
+            return "Invalid query"
+
+    def execute_audience_query(self, query: str):
         # get the tokens from the query string
         tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
         # check if the query is valid
