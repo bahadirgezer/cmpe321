@@ -2,100 +2,11 @@ import os
 import mysql.connector
 
 
-class Column:
-    def __init__(self,
-                 name: str = None,
-                 data_type: str = None,
-                 length: int = None,  # for varchar
-                 precision: int = None,  # for decimal
-                 scale: int = None,  # for decimal
-                 nullable: bool = None,
-                 primary_key: bool = None,
-                 auto_increment: bool = None,
-                 default: str = None,
-                 unique: bool = None,
-                 check: str = None,  # for check constraint
-                 foreign_key: str = None,  # for foreign key constraint
-                 reference: str = None,  # for foreign key constraint
-                 on_update: str = None,  # for foreign key constraint
-                 on_delete: str = None,  # for foreign key constraint
-                 index: bool = None,
-                 index_name: str = None,
-                 index_type: str = None,
-                 index_columns: list = None):
-        """
-        :param name:
-        :param data_type:
-        :param length:
-        :param precision:
-        :param scale:
-        :param nullable:
-        :param primary_key:
-        :param auto_increment:
-        :param default:
-        :param unique:
-        :param check:
-        :param foreign_key:
-        :param reference:
-        :param on_update:
-        :param on_delete:
-        :param index:
-        :param index_name:
-        :param index_type:
-        :param index_columns:
-        """
-
-        self.name = name
-        self.data_type = data_type
-        self.length = length
-        self.precision = precision
-        self.scale = scale
-        self.nullable = nullable
-        self.primary_key = primary_key
-        self.auto_increment = auto_increment
-        self.default = default
-        self.unique = unique
-        self.check = check
-        self.foreign_key = foreign_key
-        self.reference = reference
-        self.on_update = on_update
-        self.on_delete = on_delete
-        self.index = index
-        self.index_name = index_name
-        self.index_type = index_type
-        self.index_columns = index_columns
-
-    def __str__(self):
-        # return the column create table statement
-        column = f"{self.name} {self.data_type}"
-        if self.length:
-            column += f"({self.length})"
-        if self.precision:
-            column += f"({self.precision},{self.scale})"
-        if not self.nullable:
-            column += " NOT NULL"
-        if self.primary_key:
-            column += " PRIMARY KEY"
-        if self.auto_increment:
-            column += " AUTO_INCREMENT"
-        if self.default:
-            column += f" DEFAULT {self.default}"
-        if self.unique:
-            column += " UNIQUE"
-        if self.check:
-            column += f" CHECK ({self.check})"
-        if self.foreign_key:
-            column += f" FOREIGN KEY ({self.foreign_key})"
-            column += f" REFERENCES {self.reference}"
-            if self.on_update:
-                column += f" ON UPDATE {self.on_update}"
-            if self.on_delete:
-                column += f" ON DELETE {self.on_delete}"
-        return column
-
-
 class Database:
     def __init__(self):
+        self.director = None
+        self.manager = None
+        self.audience = None
         self.connection = None
         self.cursor = None
         self.default_schema = ""
