@@ -171,7 +171,84 @@ class Database:
         except mysql.connector.Error as err:
             print(f"Error: '{err}'")
         finally:
-            self.cursor.close()    def execute_audience_query(self, query: str):
+            self.cursor.close()
+
+    def manager_login(self, username: str, password: str) -> bool:
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT * FROM database_manager WHERE username = '{username}' AND password = '{password}'")
+            result = self.cursor.fetchone()
+            if result:
+                print("Login Successful")
+                self.manager = username
+                self.director = None
+                self.audience = None
+                return True
+            else:
+                print("Login Failed")
+                return False
+        except mysql.connector.Error as err:
+            print(f"Error: '{err}'")
+        finally:
+            self.cursor.close()
+
+    def director_login(self, username: str, password: str) -> bool:
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT * FROM director, user WHERE director.username = '{username}' AND \
+                director.username = user.username AND user.password = '{password}'")
+            result = self.cursor.fetchone()
+            print(result)
+            if result:
+                print("Login Successful")
+                self.director = username
+                self.manager = None
+                self.audience = None
+                return True
+            else:
+                print("Login Failed")
+                return False
+        except mysql.connector.Error as err:
+            print(f"Error: '{err}'")
+        finally:
+            self.cursor.close()
+
+    def audience_login(self, username: str, password: str) -> bool:
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT * FROM audience, user WHERE audience.username = '{username}' AND \
+                audience.username = user.username AND user.password = '{password}'")
+            result = self.cursor.fetchone()
+            if result:
+                print("Login Successful")
+                self.audience = username
+                self.manager = None
+                self.director = None
+                return True
+            else:
+                print("Login Failed")
+                return False
+        except mysql.connector.Error as err:
+            print(f"Error: '{err}'")
+        finally:
+            self.cursor.close()
+
+    def create_audience(self, username: str, password: str, name: str, surname: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"INSERT INTO user VALUES ('{username}', '{password}', '{name}', '{surname}')")
+            self.cursor.execute(f"INSERT INTO audience VALUES ('{username}')")
+            self.connection.commit()
+            return "Audience created"
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
 
     def execute_manager_query(self, query: str) -> str:
         # get the tokens from the query string
