@@ -250,6 +250,132 @@ class Database:
         finally:
             self.cursor.close()
 
+    def create_director(self, username: str, password: str, name: str, surname: str, nation: str):
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT id FROM nation WHERE name = '{nation}'")
+            if self.cursor.rowcount == 0:
+                # add the nation to the nation table
+                self.cursor.execute(f"INSERT INTO nation (name) VALUES ('{nation}')")
+                self.connection.commit()
+                self.cursor.execute(f"SELECT id FROM nation WHERE name = '{nation}'")
+            nation_id = self.cursor.fetchone()[0]
+            self.cursor.execute(f"INSERT INTO user VALUES ('{username}', '{password}', '{name}', '{surname}')")
+            self.cursor.execute(f"INSERT INTO director VALUES ('{username}', {nation_id})")
+            self.connection.commit()
+            return "Director created"
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def delete_audience(self, username: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT * FROM audience WHERE username = '{username}'")
+            if self.cursor.rowcount == 0:
+                return "Audience not found"
+            self.cursor.execute(f"DELETE FROM audience WHERE username = '{username}'")
+            self.cursor.execute(f"DELETE FROM user WHERE username = '{username}'")
+            self.connection.commit()
+            return "Audience deleted"
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def update_director_platform(self, username: str, new_platform_id: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(f"SELECT * FROM director_platform WHERE director_username = '{username}'")
+            if self.cursor.rowcount == 0:
+                self.cursor.execute(f"INSERT INTO director_platform VALUES ('{username}', {new_platform_id})")
+                return "Director updated"
+            old_platform_id = self.cursor.fetchone()[1]
+            self.cursor.execute(
+                f"UPDATE director_platform SET platform_id = {new_platform_id} WHERE director_username = '{username}'")
+            self.connection.commit()
+            return "Director updated, old platform id: " + str(old_platform_id)
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_directors(self) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT u.username, u.password, u.name, u.surname, n.name, dp.platform_id FROM user u JOIN director d ON d.username = u.username JOIN nation n ON n.id = d.nation_id LEFT OUTER JOIN director_platform dp ON u.username = dp.director_username")
+            if self.cursor.rowcount == 0:
+                return "No directors found"
+            directors = "(username, name, surname, nation, platform-id)\n"
+            for director in self.cursor.fetchall():
+                directors += str(director) + "\n"
+            return directors
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_audience_ratings(self, username: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")  # movie id movie name rating
+            self.cursor.execute(
+                f"SELECT r.movie_id, m.name, r.rating FROM rating r JOIN movie m ON m.id = r.movie_id WHERE r.audience_username = '{username}'")
+            if self.cursor.rowcount == 0:
+                return "No ratings found"
+
+            ratings = "(movie-id, movie-name, rating)\n"
+            for rating in self.cursor.fetchall():
+                ratings += str(rating) + "\n"
+            return ratings
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_director_movies(self, username: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(
+                buffered=True)  # movie id, movie name, theatre id, district, time slot.
+            self.cursor.execute(f"USE {self.default_schema}")
+            self.cursor.execute(
+                f"SELECT m.id, m.name, t.id, t.district, ms.time_slot FROM movie_session ms JOIN movie m ON m.id = ms.movie_id JOIN theater t ON t.id = ms.theater_id WHERE m.director_username = '{username}'")
+            if self.cursor.rowcount == 0:
+                return "No movies found"
+
+            movies = "(movie-id, movie-name, theatre-id, district, time-slot)\n"
+            for movie in self.cursor.fetchall():
+                movies += str(movie) + "\n"
+            return movies
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
+    def read_movie_average_rating(self, movie_id: str) -> str:
+        try:
+            self.cursor = self.connection.cursor(buffered=True)
+            self.cursor.execute(f"USE {self.default_schema}")  # movie id movie name rating
+            # self.cursor.execute(f"SELECT AVG(rating) FROM rating WHERE movie_id = {movie_id}")
+            self.cursor.execute(f"SELECT m.average_rating FROM movie m WHERE m.id = {movie_id}")
+            if self.cursor.rowcount == 0:
+                return "No movie found"
+            return str(self.cursor.fetchone()[0])
+
+        except mysql.connector.Error as err:
+            return f"Error: '{err}'"
+        finally:
+            self.cursor.close()
+
     def execute_manager_query(self, query: str) -> str:
         # get the tokens from the query string
         tokens = [token.lower() if i < 2 else token for i, token in enumerate(query.split())]
