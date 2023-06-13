@@ -1,0 +1,2 @@
+{"type_name": "dragon", "num_fields": 5, "num_pages": 1, "primary_key_field": "name", "fields": ["{\"name\": \"name\", \"type\": \"str\"}", "{\"name\": \"age\", \"type\": \"int\"}", "{\"name\": \"color\", \"type\": \"str\"}", "{\"name\": \"owner\", \"type\": \"str\"}", "{\"name\": \"skill\", \"type\": \"str\"}"]}
+{"header": [{"page_number": 1, "max_records": 10, "num_records": 1}], "records": [{"header": {"key": "Viserion"}, "fields": ["Viserion", "5", "White", "NightKing", "IceBreathing"]}]}
