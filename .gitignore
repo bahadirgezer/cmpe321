@@ -11,3 +11,5 @@ project3/.idea
 project3/.env
 project3/src/database/__pycache__
 project3/src/gui/__pycache__
+project4/.idea
+project4/src/data/__pycache__
